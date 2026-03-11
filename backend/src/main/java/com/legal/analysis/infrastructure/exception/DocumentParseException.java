@@ -1,0 +1,12 @@
+package com.legal.analysis.infrastructure.exception;
+
+public class DocumentParseException extends RuntimeException {
+
+    public DocumentParseException(String message) {
+        super(message);
+    }
+
+    public DocumentParseException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

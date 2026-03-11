@@ -1,0 +1,12 @@
+package com.legal.analysis.application.dto.response;
+
+import java.time.LocalDateTime;
+
+public record UserResponse(
+        Long id,
+        String email,
+        String fullName,
+        String avatarUrl,
+        String role,
+        LocalDateTime createdAt
+) {}
