@@ -10,10 +10,36 @@ interface FileUploadProps {
 
 export default function FileUpload({ onUpload, isLoading, error }: FileUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewContent, setPreviewContent] = useState<string | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
+  const PREVIEW_LIMIT = 700;
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
-      setSelectedFile(acceptedFiles[0]);
+      const file = acceptedFiles[0];
+      setSelectedFile(file);
+      setPreviewContent(null);
+      setPreviewError(null);
+      setIsPreviewExpanded(false);
+
+      const isTxtFile = file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt');
+      if (!isTxtFile) {
+        return;
+      }
+
+      setIsPreviewLoading(true);
+      file.text()
+        .then((text) => {
+          setPreviewContent(text);
+        })
+        .catch(() => {
+          setPreviewError('Не удалось прочитать содержимое файла.');
+        })
+        .finally(() => {
+          setIsPreviewLoading(false);
+        });
     }
   }, []);
 
@@ -34,7 +60,13 @@ export default function FileUpload({ onUpload, isLoading, error }: FileUploadPro
     }
   };
 
-  const clearFile = () => setSelectedFile(null);
+  const clearFile = () => {
+    setSelectedFile(null);
+    setPreviewContent(null);
+    setPreviewError(null);
+    setIsPreviewLoading(false);
+    setIsPreviewExpanded(false);
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
@@ -85,6 +117,41 @@ export default function FileUpload({ onUpload, isLoading, error }: FileUploadPro
             >
               <X className="w-4 h-4" />
             </button>
+          </div>
+
+          <div className="mt-4 rounded-lg border border-green-100 bg-white p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+              Содержимое файла
+            </p>
+            {isPreviewLoading && (
+              <p className="text-sm text-gray-500">Читаем текст файла...</p>
+            )}
+            {previewError && (
+              <p className="text-sm text-red-600">{previewError}</p>
+            )}
+            {!isPreviewLoading && !previewError && previewContent !== null && (
+              <>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  {isPreviewExpanded || previewContent.length <= PREVIEW_LIMIT
+                    ? previewContent || 'Файл пустой.'
+                    : `${previewContent.slice(0, PREVIEW_LIMIT)}...`}
+                </p>
+                {previewContent.length > PREVIEW_LIMIT && (
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewExpanded((prev) => !prev)}
+                    className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    {isPreviewExpanded ? 'Свернуть' : 'Показать больше'}
+                  </button>
+                )}
+              </>
+            )}
+            {!isPreviewLoading && !previewError && previewContent === null && (
+              <p className="text-sm text-gray-500">
+                Предпросмотр доступен для файлов формата .txt.
+              </p>
+            )}
           </div>
         </div>
       )}

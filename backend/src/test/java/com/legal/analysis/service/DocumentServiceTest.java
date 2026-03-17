@@ -3,9 +3,11 @@ package com.legal.analysis.service;
 import com.legal.analysis.application.dto.response.DocumentResponse;
 import com.legal.analysis.application.service.DocumentService;
 import com.legal.analysis.domain.model.Document;
+import com.legal.analysis.domain.model.Precedent;
 import com.legal.analysis.domain.model.Role;
 import com.legal.analysis.domain.model.User;
 import com.legal.analysis.domain.repository.DocumentRepository;
+import com.legal.analysis.domain.repository.PrecedentRepository;
 import com.legal.analysis.domain.repository.UserRepository;
 import com.legal.analysis.infrastructure.exception.DocumentParseException;
 import com.legal.analysis.infrastructure.exception.ResourceNotFoundException;
@@ -13,6 +15,7 @@ import com.legal.analysis.infrastructure.parser.DocumentParserFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,6 +36,9 @@ class DocumentServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PrecedentRepository precedentRepository;
 
     @Mock
     private DocumentParserFactory parserFactory;
@@ -69,13 +75,24 @@ class DocumentServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(parserFactory.parseDocument(file)).thenReturn("Test content");
         when(documentRepository.save(any(Document.class))).thenReturn(testDocument);
+        when(precedentRepository.findBySourceDocumentId(1L)).thenReturn(Optional.empty());
+        when(precedentRepository.save(any(Precedent.class))).thenAnswer(invocation -> {
+            Precedent precedent = invocation.getArgument(0);
+            precedent.setId(100L);
+            return precedent;
+        });
 
         DocumentResponse response = documentService.uploadDocument(file, 1L);
+        ArgumentCaptor<Precedent> precedentCaptor = ArgumentCaptor.forClass(Precedent.class);
 
         assertThat(response).isNotNull();
         assertThat(response.title()).isEqualTo("test-doc");
         assertThat(response.fileType()).isEqualTo("txt");
         verify(documentRepository).save(any(Document.class));
+        verify(precedentRepository).save(precedentCaptor.capture());
+        assertThat(precedentCaptor.getValue().getTitle()).isEqualTo("test-doc.txt");
+        assertThat(precedentCaptor.getValue().getContent()).isEqualTo("Test content");
+        assertThat(precedentCaptor.getValue().getSummary()).isEqualTo("Test content");
     }
 
     @Test

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="004-sync-uploaded-precedent-content-and-title" author="legal-analysis">
+        <sql>
+            UPDATE precedents p
+            SET
+                title = COALESCE(NULLIF(BTRIM(d.file_name), ''), NULLIF(BTRIM(d.title), ''), p.title),
+                content = COALESCE(NULLIF(BTRIM(p.content), ''), d.content),
+                summary = CASE
+                    WHEN p.summary IS NULL OR BTRIM(p.summary) = '' THEN
+                        CASE
+                            WHEN d.content IS NULL OR BTRIM(d.content) = '' THEN p.summary
+                            WHEN CHAR_LENGTH(BTRIM(d.content)) &lt;= 500 THEN BTRIM(d.content)
+                            ELSE SUBSTRING(BTRIM(d.content) FROM 1 FOR 500) || '...'
+                        END
+                    ELSE p.summary
+                END
+            FROM documents d
+            WHERE p.source_document_id = d.id;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

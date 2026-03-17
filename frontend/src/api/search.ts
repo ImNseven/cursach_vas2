@@ -1,5 +1,5 @@
 import { api } from './axios';
-import { SearchResult, SearchHistory, PageResponse } from '../types';
+import { SearchResult, SearchHistory, SimilarPrecedentsResult, PageResponse } from '../types';
 
 export const searchApi = {
   analyzeDocument: async (documentId: number): Promise<SearchResult> => {
@@ -9,6 +9,11 @@ export const searchApi = {
 
   getDocumentResults: async (documentId: number): Promise<SearchResult> => {
     const response = await api.get(`/search/results/${documentId}`);
+    return response.data;
+  },
+
+  getSimilarPrecedents: async (precedentId: number): Promise<SimilarPrecedentsResult> => {
+    const response = await api.get(`/search/precedents/${precedentId}/similar`);
     return response.data;
   },
 

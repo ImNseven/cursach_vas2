@@ -16,8 +16,10 @@ import {
 
 export default function DocumentsPage() {
   const [page, setPage] = useState(0);
+  const [expandedById, setExpandedById] = useState<Record<number, boolean>>({});
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const PREVIEW_LIMIT = 260;
 
   const { data, isLoading } = useQuery({
     queryKey: ['documents', page],
@@ -33,7 +35,16 @@ export default function DocumentsPage() {
     mutationFn: searchApi.analyzeDocument,
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
-      navigate('/dashboard');
+      navigate('/dashboard', {
+        state: { reanalyzeResult: result },
+      });
+    },
+    onError: (err: any) => {
+      if (err?.response?.status === 404) {
+        alert('К сожалению, в базе нет этого документа.');
+        return;
+      }
+      alert(err?.response?.data?.message || 'Не удалось повторно выполнить поиск.');
     },
   });
 
@@ -88,6 +99,29 @@ export default function DocumentsPage() {
                     <p className="text-xs text-gray-500">
                       {doc.fileName} • {formatSize(doc.fileSize)} • {formatDate(doc.uploadedAt)}
                     </p>
+                    {doc.content && (
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                          {expandedById[doc.id] || doc.content.length <= PREVIEW_LIMIT
+                            ? doc.content
+                            : `${doc.content.slice(0, PREVIEW_LIMIT)}...`}
+                        </p>
+                        {doc.content.length > PREVIEW_LIMIT && (
+                          <button
+                            type="button"
+                            className="mt-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                            onClick={() =>
+                              setExpandedById((prev) => ({
+                                ...prev,
+                                [doc.id]: !prev[doc.id],
+                              }))
+                            }
+                          >
+                            {expandedById[doc.id] ? 'Свернуть' : 'Показать больше'}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 

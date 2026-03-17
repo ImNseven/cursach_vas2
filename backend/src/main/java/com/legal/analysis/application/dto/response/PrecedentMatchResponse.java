@@ -8,11 +8,11 @@ public record PrecedentMatchResponse(
         String caseNumber,
         String title,
         String summary,
+        String content,
         String courtName,
         LocalDate decisionDate,
         String decision,
         Float similarityScore,
         CategoryResponse category,
-        Set<TagResponse> tags,
-        boolean isFavorite
+        Set<TagResponse> tags
 ) {}

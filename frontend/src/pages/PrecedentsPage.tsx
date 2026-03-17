@@ -1,13 +1,22 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { precedentsApi } from '../api/precedents';
+import { searchApi } from '../api/search';
+import type { PrecedentMatch, SimilarPrecedentsResult } from '../types';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import SimilarityBadge from '../components/ui/SimilarityBadge';
 import { Scale, Search, Building2, Calendar, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+
+const PRECEDENT_PREVIEW_LIMIT = 280;
 
 export default function PrecedentsPage() {
   const [page, setPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [expandedTextById, setExpandedTextById] = useState<Record<number, boolean>>({});
+  const [expandedSimilarTextById, setExpandedSimilarTextById] = useState<Record<string, boolean>>({});
+  const [similarResultsById, setSimilarResultsById] = useState<Record<number, SimilarPrecedentsResult>>({});
+  const [expandedSimilarById, setExpandedSimilarById] = useState<Record<number, boolean>>({});
 
   const { data, isLoading } = useQuery({
     queryKey: ['precedents', page],
@@ -18,6 +27,20 @@ export default function PrecedentsPage() {
     queryKey: ['precedents-search', searchQuery],
     queryFn: () => precedentsApi.search(searchQuery),
     enabled: searchQuery.length > 2,
+  });
+
+  const similarMutation = useMutation({
+    mutationFn: (precedentId: number) => searchApi.getSimilarPrecedents(precedentId),
+    onSuccess: (result) => {
+      setSimilarResultsById((prev) => ({
+        ...prev,
+        [result.precedentId]: result,
+      }));
+      setExpandedSimilarById((prev) => ({
+        ...prev,
+        [result.precedentId]: true,
+      }));
+    },
   });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -78,6 +101,18 @@ export default function PrecedentsPage() {
         <div className="grid gap-4">
           {displayedPrecedents.map((precedent) => (
             <div key={precedent.id} className="card hover:shadow-md transition-shadow">
+              {(() => {
+                const sourceText = (precedent.summary?.trim() || precedent.content?.trim() || '');
+                const isTextExpanded = !!expandedTextById[precedent.id];
+                const needsTruncation = sourceText.length > PRECEDENT_PREVIEW_LIMIT;
+                const previewText = isTextExpanded || !needsTruncation
+                  ? sourceText
+                  : `${sourceText.slice(0, PRECEDENT_PREVIEW_LIMIT)}...`;
+                const similarData = similarResultsById[precedent.id];
+                const similarExpanded = !!expandedSimilarById[precedent.id];
+
+                return (
+                  <>
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Scale className="w-5 h-5 text-blue-600" />
@@ -114,8 +149,24 @@ export default function PrecedentsPage() {
                     )}
                   </div>
 
-                  {precedent.summary && (
-                    <p className="text-sm text-gray-600 line-clamp-2">{precedent.summary}</p>
+                  {sourceText && (
+                    <div>
+                      <p className="text-sm text-gray-600">{previewText}</p>
+                      {needsTruncation && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedTextById((prev) => ({
+                              ...prev,
+                              [precedent.id]: !isTextExpanded,
+                            }))
+                          }
+                          className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
+                        >
+                          {isTextExpanded ? 'Свернуть' : 'Смотреть больше'}
+                        </button>
+                      )}
+                    </div>
                   )}
 
                   {precedent.tags.length > 0 && (
@@ -131,8 +182,90 @@ export default function PrecedentsPage() {
                       ))}
                     </div>
                   )}
+
+                  <div className="mt-4 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => similarMutation.mutate(precedent.id)}
+                      disabled={similarMutation.isPending && similarMutation.variables === precedent.id}
+                      className="btn-secondary"
+                    >
+                      Найти похожие
+                    </button>
+                    {similarData && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedSimilarById((prev) => ({
+                            ...prev,
+                            [precedent.id]: !similarExpanded,
+                          }))
+                        }
+                        className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                      >
+                        {similarExpanded ? 'Скрыть похожие' : 'Показать похожие'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
+
+              {similarData && similarExpanded && (
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <p className="text-sm font-medium text-gray-900 mb-3">
+                    Похожие прецеденты: {similarData.totalMatches}
+                  </p>
+                  {similarData.matches.length === 0 ? (
+                    <p className="text-sm text-gray-500">Похожие прецеденты не найдены.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {similarData.matches.map((match: PrecedentMatch) => {
+                        const detailsText = (match.summary?.trim() || match.content?.trim() || '');
+                        const rowKey = `${precedent.id}-${match.precedentId}`;
+                        const isExpanded = !!expandedSimilarTextById[rowKey];
+                        const hasLongText = detailsText.length > 180;
+                        const previewText = isExpanded || !hasLongText
+                          ? detailsText
+                          : `${detailsText.slice(0, 180)}...`;
+
+                        return (
+                          <div key={match.precedentId} className="rounded-lg border border-gray-100 p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <SimilarityBadge score={match.similarityScore} />
+                              {match.caseNumber && (
+                                <span className="text-xs text-gray-500">#{match.caseNumber}</span>
+                              )}
+                            </div>
+                            <p className="text-sm font-medium text-gray-900">{match.title}</p>
+                            {detailsText && (
+                              <div className="mt-1">
+                                <p className="text-xs text-gray-600 whitespace-pre-wrap">{previewText}</p>
+                                {hasLongText && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setExpandedSimilarTextById((prev) => ({
+                                        ...prev,
+                                        [rowKey]: !isExpanded,
+                                      }))
+                                    }
+                                    className="mt-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                                  >
+                                    {isExpanded ? 'Свернуть' : 'Показать больше'}
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+                  </>
+                );
+              })()}
             </div>
           ))}
         </div>

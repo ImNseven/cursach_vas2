@@ -48,6 +48,10 @@ public class Precedent {
     private String decision;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_document_id")
+    private Document sourceDocument;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 

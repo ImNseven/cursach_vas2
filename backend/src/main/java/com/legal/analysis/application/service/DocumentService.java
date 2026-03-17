@@ -4,8 +4,10 @@ import com.legal.analysis.application.dto.response.DocumentResponse;
 import com.legal.analysis.application.dto.response.CategoryResponse;
 import com.legal.analysis.application.dto.response.TagResponse;
 import com.legal.analysis.domain.model.Document;
+import com.legal.analysis.domain.model.Precedent;
 import com.legal.analysis.domain.model.User;
 import com.legal.analysis.domain.repository.DocumentRepository;
+import com.legal.analysis.domain.repository.PrecedentRepository;
 import com.legal.analysis.domain.repository.UserRepository;
 import com.legal.analysis.infrastructure.exception.DocumentParseException;
 import com.legal.analysis.infrastructure.exception.ResourceNotFoundException;
@@ -18,7 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,9 +31,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DocumentService {
 
+    private static final int AUTO_PRECEDENT_SUMMARY_LIMIT = 500;
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
+    private final PrecedentRepository precedentRepository;
     private final DocumentParserFactory parserFactory;
+    private static final DateTimeFormatter UPLOAD_TITLE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @Transactional
     public DocumentResponse uploadDocument(MultipartFile file, Long userId) {
@@ -65,6 +71,7 @@ public class DocumentService {
                 .build();
 
         Document saved = documentRepository.save(document);
+        createPrecedentFromUploadedDocument(saved);
         log.info("Document uploaded: {} by user {}", saved.getId(), userId);
         return mapToResponse(saved);
     }
@@ -121,7 +128,65 @@ public class DocumentService {
                 tagResponses,
                 document.getUploadedAt(),
                 document.getIsAnalyzed(),
-                document.getMatchedPrecedents().size()
+                document.getMatchedPrecedents().size(),
+                document.getContent()
         );
+    }
+
+    private void createPrecedentFromUploadedDocument(Document document) {
+        precedentRepository.findBySourceDocumentId(document.getId()).ifPresentOrElse(
+                existing -> log.debug("Precedent for document {} already exists (precedentId={})",
+                        document.getId(), existing.getId()),
+                () -> {
+                    LocalDateTime uploadTime = document.getUploadedAt() != null
+                            ? document.getUploadedAt()
+                            : LocalDateTime.now();
+                    String dateLabel = uploadTime.format(UPLOAD_TITLE_DATE_FORMAT);
+
+                    Precedent precedent = Precedent.builder()
+                            .caseNumber("UPLOAD-" + document.getId())
+                            .title(resolveUploadedPrecedentTitle(document, dateLabel))
+                            .content(document.getContent())
+                            .summary(buildSummaryPreview(document.getContent()))
+                            .sourceDocument(document)
+                            .build();
+
+                    Precedent savedPrecedent = precedentRepository.save(precedent);
+                    log.info("Auto-created precedent {} from uploaded document {}",
+                            savedPrecedent.getId(), document.getId());
+                }
+        );
+    }
+
+    private String buildSummaryPreview(String content) {
+        if (content == null) {
+            return null;
+        }
+        String normalized = content.trim();
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        if (normalized.length() <= AUTO_PRECEDENT_SUMMARY_LIMIT) {
+            return normalized;
+        }
+        return normalized.substring(0, AUTO_PRECEDENT_SUMMARY_LIMIT) + "...";
+    }
+
+    private String resolveUploadedPrecedentTitle(Document document, String dateLabel) {
+        String fileName = Optional.ofNullable(document.getFileName())
+                .map(String::trim)
+                .orElse("");
+        if (!fileName.isEmpty()) {
+            return fileName;
+        }
+
+        String title = Optional.ofNullable(document.getTitle())
+                .map(String::trim)
+                .orElse("");
+        if (!title.isEmpty()) {
+            return title;
+        }
+
+        return "Документ №" + document.getId() + " от " + dateLabel;
     }
 }

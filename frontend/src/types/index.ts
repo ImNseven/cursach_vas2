@@ -38,6 +38,7 @@ export interface Document {
   uploadedAt: string;
   isAnalyzed: boolean;
   matchedPrecedentsCount: number;
+  content?: string;
 }
 
 export interface Precedent {
@@ -59,18 +60,27 @@ export interface PrecedentMatch {
   caseNumber: string;
   title: string;
   summary?: string;
+  content?: string;
   courtName?: string;
   decisionDate?: string;
   decision?: string;
   similarityScore: number;
   category?: Category;
   tags: Tag[];
-  isFavorite: boolean;
 }
 
 export interface SearchResult {
   documentId: number;
   documentTitle: string;
+  documentContent?: string;
+  totalMatches: number;
+  matches: PrecedentMatch[];
+  analyzedAt: string;
+}
+
+export interface SimilarPrecedentsResult {
+  precedentId: number;
+  precedentTitle: string;
   totalMatches: number;
   matches: PrecedentMatch[];
   analyzedAt: string;
@@ -82,12 +92,6 @@ export interface SearchHistory {
   documentTitle: string;
   resultsCount: number;
   searchedAt: string;
-}
-
-export interface Favorite {
-  id: number;
-  precedent: Precedent;
-  addedAt: string;
 }
 
 export interface Annotation {

@@ -1,15 +1,33 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { searchApi } from '../api/search';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { History, FileText, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 export default function HistoryPage() {
   const [page, setPage] = useState(0);
+  const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['search-history', page],
     queryFn: () => searchApi.getHistory(page, 15),
+  });
+
+  const rerunSearchMutation = useMutation({
+    mutationFn: (documentId: number) => searchApi.analyzeDocument(documentId),
+    onSuccess: (searchResult) => {
+      navigate('/dashboard', {
+        state: { reanalyzeResult: searchResult },
+      });
+    },
+    onError: (err: any) => {
+      if (err?.response?.status === 404) {
+        alert('К сожалению, в базе нет этого документа.');
+        return;
+      }
+      alert(err?.response?.data?.message || 'Не удалось повторно выполнить поиск.');
+    },
   });
 
   const formatDate = (dateStr: string) =>
@@ -65,6 +83,24 @@ export default function HistoryPage() {
                     <Search className="w-3 h-3" />
                     {item.resultsCount} прецедентов
                   </div>
+                  <button
+                    type="button"
+                    className="btn-secondary p-2"
+                    title="Повторный поиск"
+                    disabled={
+                      !item.documentId ||
+                      (rerunSearchMutation.isPending && rerunSearchMutation.variables === item.documentId)
+                    }
+                    onClick={() => {
+                      if (!item.documentId) {
+                        alert('К сожалению, в базе нет этого документа.');
+                        return;
+                      }
+                      rerunSearchMutation.mutate(item.documentId);
+                    }}
+                  >
+                    <Search className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>

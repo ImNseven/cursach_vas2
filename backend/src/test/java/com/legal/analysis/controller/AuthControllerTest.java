@@ -13,6 +13,7 @@ import com.legal.analysis.infrastructure.security.JwtService;
 import com.legal.analysis.infrastructure.security.UserDetailsServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -22,10 +23,12 @@ import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
     @Autowired
@@ -60,6 +63,7 @@ class AuthControllerTest {
         when(authService.register(any())).thenReturn(mockAuthResponse);
 
         mockMvc.perform(post("/api/v1/auth/register")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -72,6 +76,7 @@ class AuthControllerTest {
         RegisterRequest request = new RegisterRequest("invalid-email", "password123", "Test User");
 
         mockMvc.perform(post("/api/v1/auth/register")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -83,6 +88,7 @@ class AuthControllerTest {
         when(authService.register(any())).thenThrow(new DuplicateResourceException("Email already exists"));
 
         mockMvc.perform(post("/api/v1/auth/register")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict());
@@ -94,6 +100,7 @@ class AuthControllerTest {
         when(authService.login(any())).thenReturn(mockAuthResponse);
 
         mockMvc.perform(post("/api/v1/auth/login")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -105,6 +112,7 @@ class AuthControllerTest {
         LoginRequest request = new LoginRequest("test@example.com", "");
 
         mockMvc.perform(post("/api/v1/auth/login")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PrecedentRepository extends JpaRepository<Precedent, Long>, JpaSpecificationExecutor<Precedent> {
@@ -20,6 +21,8 @@ public interface PrecedentRepository extends JpaRepository<Precedent, Long>, Jpa
     List<Precedent> searchByText(@Param("query") String query);
 
     List<Precedent> findAllByOrderByCreatedAtDesc();
+
+    Optional<Precedent> findBySourceDocumentId(Long sourceDocumentId);
 
     long countByCategoryId(Long categoryId);
 }

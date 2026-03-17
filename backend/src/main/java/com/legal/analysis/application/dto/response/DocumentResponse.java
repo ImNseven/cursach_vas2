@@ -13,5 +13,6 @@ public record DocumentResponse(
         Set<TagResponse> tags,
         LocalDateTime uploadedAt,
         Boolean isAnalyzed,
-        Integer matchedPrecedentsCount
+        Integer matchedPrecedentsCount,
+        String content
 ) {}

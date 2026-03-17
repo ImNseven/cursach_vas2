@@ -8,7 +8,6 @@ import DashboardPage from './pages/DashboardPage';
 import DocumentsPage from './pages/DocumentsPage';
 import PrecedentsPage from './pages/PrecedentsPage';
 import HistoryPage from './pages/HistoryPage';
-import FavoritesPage from './pages/FavoritesPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,14 +81,6 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <HistoryPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/favorites"
-            element={
-              <ProtectedRoute>
-                <FavoritesPage />
               </ProtectedRoute>
             }
           />

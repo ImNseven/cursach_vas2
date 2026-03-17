@@ -3,6 +3,7 @@ package com.legal.analysis.api.controller;
 import com.legal.analysis.application.dto.response.PageResponse;
 import com.legal.analysis.application.dto.response.SearchHistoryResponse;
 import com.legal.analysis.application.dto.response.SearchResultResponse;
+import com.legal.analysis.application.dto.response.SimilarPrecedentsResponse;
 import com.legal.analysis.application.service.SearchService;
 import com.legal.analysis.infrastructure.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,13 @@ public class SearchController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         return ResponseEntity.ok(searchService.getDocumentResults(documentId, userDetails.getId()));
+    }
+
+    @GetMapping("/precedents/{precedentId}/similar")
+    public ResponseEntity<SimilarPrecedentsResponse> getSimilarPrecedents(
+            @PathVariable Long precedentId
+    ) {
+        return ResponseEntity.ok(searchService.findSimilarPrecedents(precedentId));
     }
 
     @GetMapping("/history")

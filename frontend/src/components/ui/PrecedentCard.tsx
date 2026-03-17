@@ -1,47 +1,25 @@
 import { useState } from 'react';
 import { PrecedentMatch } from '../../types';
 import SimilarityBadge from './SimilarityBadge';
-import { Heart, Scale, Calendar, Building2, ChevronDown, ChevronUp } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { favoritesApi } from '../../api/favorites';
+import { Scale, Calendar, Building2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface PrecedentCardProps {
   match: PrecedentMatch;
-  documentId: number;
 }
 
-export default function PrecedentCard({ match, documentId }: PrecedentCardProps) {
+const SUMMARY_PREVIEW_LIMIT = 260;
+
+export default function PrecedentCard({ match }: PrecedentCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const [isFav, setIsFav] = useState(match.isFavorite);
-  const queryClient = useQueryClient();
-
-  const addFav = useMutation({
-    mutationFn: () => favoritesApi.add(match.precedentId),
-    onSuccess: () => {
-      setIsFav(true);
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
-    },
-  });
-
-  const removeFav = useMutation({
-    mutationFn: () => favoritesApi.remove(match.precedentId),
-    onSuccess: () => {
-      setIsFav(false);
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
-    },
-  });
-
-  const handleFavToggle = () => {
-    if (isFav) {
-      removeFav.mutate();
-    } else {
-      addFav.mutate();
-    }
-  };
+  const detailsText = (match.summary?.trim() || match.content?.trim() || '');
+  const hasLongSummary = detailsText.length > SUMMARY_PREVIEW_LIMIT;
+  const displayedSummary = expanded || !hasLongSummary
+    ? detailsText
+    : `${detailsText.slice(0, SUMMARY_PREVIEW_LIMIT)}...`;
 
   return (
     <div className="card hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <SimilarityBadge score={match.similarityScore} />
@@ -75,8 +53,29 @@ export default function PrecedentCard({ match, documentId }: PrecedentCardProps)
             )}
           </div>
 
-          {match.summary && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-3">{match.summary}</p>
+          {detailsText && (
+            <div className="mb-3">
+              <p className="text-sm text-gray-600">{displayedSummary}</p>
+              {hasLongSummary && (
+                <button
+                  type="button"
+                  onClick={() => setExpanded((prev) => !prev)}
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                >
+                  {expanded ? (
+                    <>
+                      <ChevronUp className="w-3 h-3" />
+                      Свернуть
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3 h-3" />
+                      Смотреть больше
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           )}
 
           {match.decision && (
@@ -100,18 +99,6 @@ export default function PrecedentCard({ match, documentId }: PrecedentCardProps)
           )}
         </div>
 
-        <button
-          onClick={handleFavToggle}
-          disabled={addFav.isPending || removeFav.isPending}
-          className={`flex-shrink-0 p-2 rounded-lg transition-colors ${
-            isFav
-              ? 'text-red-500 bg-red-50 hover:bg-red-100'
-              : 'text-gray-400 bg-gray-50 hover:bg-gray-100'
-          }`}
-          title={isFav ? 'Убрать из избранного' : 'Добавить в избранное'}
-        >
-          <Heart className={`w-4 h-4 ${isFav ? 'fill-current' : ''}`} />
-        </button>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { documentsApi } from '../api/documents';
 import { searchApi } from '../api/search';
 import { SearchResult } from '../types';
@@ -17,10 +18,25 @@ import {
 type UploadStep = 'upload' | 'analyzing' | 'results';
 
 export default function DashboardPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [step, setStep] = useState<UploadStep>('upload');
   const [results, setResults] = useState<SearchResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [documentExpanded, setDocumentExpanded] = useState(false);
   const queryClient = useQueryClient();
+  const DOCUMENT_PREVIEW_LIMIT = 380;
+
+  useEffect(() => {
+    const state = location.state as { reanalyzeResult?: SearchResult } | null;
+    if (state?.reanalyzeResult) {
+      setResults(state.reanalyzeResult);
+      setStep('results');
+      setUploadError(null);
+      setDocumentExpanded(false);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   const uploadAndAnalyze = useMutation({
     mutationFn: async (file: File) => {
@@ -33,6 +49,7 @@ export default function DashboardPage() {
     onSuccess: (data) => {
       setResults(data);
       setStep('results');
+      setDocumentExpanded(false);
       queryClient.invalidateQueries({ queryKey: ['documents'] });
       queryClient.invalidateQueries({ queryKey: ['search-history'] });
     },
@@ -46,6 +63,7 @@ export default function DashboardPage() {
     setStep('upload');
     setResults(null);
     setUploadError(null);
+    setDocumentExpanded(false);
   };
 
   return (
@@ -144,6 +162,24 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-500">
                   Документ: <span className="font-medium text-gray-700">{results.documentTitle}</span>
                 </p>
+                {results.documentContent && (
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                      {documentExpanded || results.documentContent.length <= DOCUMENT_PREVIEW_LIMIT
+                        ? results.documentContent
+                        : `${results.documentContent.slice(0, DOCUMENT_PREVIEW_LIMIT)}...`}
+                    </p>
+                    {results.documentContent.length > DOCUMENT_PREVIEW_LIMIT && (
+                      <button
+                        type="button"
+                        onClick={() => setDocumentExpanded((prev) => !prev)}
+                        className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
+                      >
+                        {documentExpanded ? 'Свернуть' : 'Показать больше'}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-blue-600">{results.totalMatches}</div>
@@ -171,7 +207,6 @@ export default function DashboardPage() {
                 <PrecedentCard
                   key={match.precedentId}
                   match={match}
-                  documentId={results.documentId}
                 />
               ))}
             </div>

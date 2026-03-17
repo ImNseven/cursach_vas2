@@ -6,7 +6,6 @@ import {
   Scale,
   FileText,
   History,
-  Heart,
   LogOut,
   User,
   Search,
@@ -22,7 +21,6 @@ const navItems = [
   { path: '/documents', label: 'Документы', icon: FileText },
   { path: '/precedents', label: 'Прецеденты', icon: BookOpen },
   { path: '/history', label: 'История', icon: History },
-  { path: '/favorites', label: 'Избранное', icon: Heart },
 ];
 
 export default function Layout({ children }: LayoutProps) {
