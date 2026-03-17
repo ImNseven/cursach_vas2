@@ -112,8 +112,8 @@ cd backend
 ```
 DATABASE_URL=<автоматически из PostgreSQL addon>
 JWT_SECRET=<случайная строка>
-GITHUB_CLIENT_ID=<из GitHub OAuth App>
-GITHUB_CLIENT_SECRET=<из GitHub OAuth App>
+GITHUB_CLIENT_ID=<ваш GitHub OAuth Client ID>
+GITHUB_CLIENT_SECRET=<ваш GitHub OAuth Client Secret>
 FRONTEND_URL=https://<your-frontend>.onrender.com
 ```
 
@@ -127,6 +127,7 @@ FRONTEND_URL=https://<your-frontend>.onrender.com
 **Переменные окружения:**
 ```
 VITE_API_URL=https://<your-backend>.onrender.com
+VITE_GITHUB_CLIENT_ID=<тот же GitHub OAuth Client ID>
 ```
 
 ### 3. База данных PostgreSQL

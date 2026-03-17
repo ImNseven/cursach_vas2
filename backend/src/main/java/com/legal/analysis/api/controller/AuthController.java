@@ -1,5 +1,6 @@
 package com.legal.analysis.api.controller;
 
+import com.legal.analysis.application.dto.request.GitHubCallbackRequest;
 import com.legal.analysis.application.dto.request.LoginRequest;
 import com.legal.analysis.application.dto.request.RefreshTokenRequest;
 import com.legal.analysis.application.dto.request.RegisterRequest;
@@ -31,6 +32,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/github")
+    public ResponseEntity<AuthResponse> loginWithGitHub(@Valid @RequestBody GitHubCallbackRequest request) {
+        return ResponseEntity.ok(authService.loginWithGitHub(request.code()));
     }
 
     @PostMapping("/refresh")

@@ -54,6 +54,10 @@ github:
   api:
     base-url: https://api.github.com
     token: ${GITHUB_API_TOKEN:}
+  oauth:
+    client-id: ${GITHUB_CLIENT_ID:your-github-client-id}
+    client-secret: ${GITHUB_CLIENT_SECRET:your-github-client-secret}
+    redirect-uri: "${FRONTEND_URL:http://localhost:5173}/auth/github/callback"
 
 springdoc:
   api-docs:

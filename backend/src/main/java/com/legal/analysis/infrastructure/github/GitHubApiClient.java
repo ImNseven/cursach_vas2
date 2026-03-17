@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Optional;
 
 @Slf4j
@@ -64,7 +65,7 @@ public class GitHubApiClient {
             String login,
             String name,
             String email,
-            String avatarUrl
+            @JsonProperty("avatar_url") String avatarUrl
     ) {}
 
     public record GitHubEmail(

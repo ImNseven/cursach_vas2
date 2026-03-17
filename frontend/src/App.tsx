@@ -4,6 +4,7 @@ import { useAuthStore } from './store/authStore';
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import GitHubCallbackPage from './pages/GitHubCallbackPage';
 import DashboardPage from './pages/DashboardPage';
 import DocumentsPage from './pages/DocumentsPage';
 import PrecedentsPage from './pages/PrecedentsPage';
@@ -52,6 +53,7 @@ export default function App() {
               </PublicRoute>
             }
           />
+          <Route path="/auth/github/callback" element={<GitHubCallbackPage />} />
           <Route
             path="/dashboard"
             element={

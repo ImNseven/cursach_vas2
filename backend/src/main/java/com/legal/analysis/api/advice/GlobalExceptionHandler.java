@@ -3,6 +3,7 @@ package com.legal.analysis.api.advice;
 import com.legal.analysis.application.dto.response.ErrorResponse;
 import com.legal.analysis.infrastructure.exception.AuthException;
 import com.legal.analysis.infrastructure.exception.DocumentParseException;
+import com.legal.analysis.infrastructure.exception.PwnedPasswordException;
 import com.legal.analysis.infrastructure.exception.DuplicateResourceException;
 import com.legal.analysis.infrastructure.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponse(403, "Forbidden", "Access denied"));
+    }
+
+    @ExceptionHandler(PwnedPasswordException.class)
+    public ResponseEntity<ErrorResponse> handlePwnedPassword(PwnedPasswordException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(400, "Bad Request", ex.getMessage()));
     }
 
     @ExceptionHandler(DocumentParseException.class)
