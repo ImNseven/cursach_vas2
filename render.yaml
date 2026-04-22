@@ -1,10 +1,11 @@
 services:
   - type: web
     name: legal-analysis-backend
-    runtime: docker
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
+    env: java
     plan: free
+    rootDir: backend
+    buildCommand: mvn package -DskipTests -B
+    startCommand: java -Xmx400m -jar target/legal-analysis-backend-0.0.1-SNAPSHOT.jar
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -13,23 +14,25 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: GITHUB_CLIENT_ID
-        sync: false
+        value: Ov23licGcpCKTS7ukwCR
       - key: GITHUB_CLIENT_SECRET
         sync: false
       - key: FRONTEND_URL
         value: https://legal-analysis-frontend.onrender.com
-      - key: JAVA_TOOL_OPTIONS
-        value: -Xmx400m
     healthCheckPath: /actuator/health
 
-  - type: static
+  - type: web
     name: legal-analysis-frontend
+    env: static
     plan: free
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
         value: https://legal-analysis-backend.onrender.com
+      - key: VITE_GITHUB_CLIENT_ID
+        value: Ov23licGcpCKTS7ukwCR
     routes:
       - type: rewrite
         source: /*

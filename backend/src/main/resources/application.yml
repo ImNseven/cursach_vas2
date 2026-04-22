@@ -3,9 +3,9 @@ spring:
     name: legal-analysis-backend
 
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/legal_analysis?sslmode=disable}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/legal_analysis?sslmode=disable}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:11052006Zz@}
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5

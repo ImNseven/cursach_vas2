@@ -115,13 +115,16 @@ public class AuthService {
         GitHubApiClient.GitHubUserInfo ghUser = githubApiClient.getUserInfo(accessToken)
                 .orElseThrow(() -> new AuthException("Не удалось получить данные пользователя GitHub"));
 
-        String email = ghUser.email() != null && !ghUser.email().isBlank()
+        String rawEmail = ghUser.email() != null && !ghUser.email().isBlank()
                 ? ghUser.email()
                 : githubApiClient.getUserPrimaryEmail(accessToken).orElse(null);
 
-        if (email == null || email.isBlank()) {
+        final String email;
+        if (rawEmail == null || rawEmail.isBlank()) {
             email = "gh-" + ghUser.id() + "@github.oauth";
             log.info("GitHub user {} has no public email, using fallback", ghUser.login());
+        } else {
+            email = rawEmail;
         }
 
         User user = userRepository.findByGithubId(String.valueOf(ghUser.id()))
