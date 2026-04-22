@@ -59,7 +59,10 @@ public class GitHubOAuthService {
             if (response != null && response.access_token() != null && !response.access_token().isBlank()) {
                 return Optional.of(response.access_token());
             }
-            log.warn("GitHub token exchange returned no access_token");
+            log.warn("GitHub token exchange returned no access_token. error={}, description={}, redirect_uri_used={}",
+                    response != null ? response.error() : "null",
+                    response != null ? response.error_description() : "null",
+                    redirectUri);
             return Optional.empty();
         } catch (Exception e) {
             log.error("GitHub token exchange failed", e);
@@ -70,6 +73,8 @@ public class GitHubOAuthService {
     private record TokenResponse(
             @JsonProperty("access_token") String access_token,
             @JsonProperty("token_type") String token_type,
-            @JsonProperty("scope") String scope
+            @JsonProperty("scope") String scope,
+            @JsonProperty("error") String error,
+            @JsonProperty("error_description") String error_description
     ) {}
 }
