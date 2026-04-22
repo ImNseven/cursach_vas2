@@ -19,6 +19,8 @@ frontend/.env
 *.ntvs*
 *.njsproj
 *.sln
+.cursor/
+.claude/
 
 # OS
 .DS_Store

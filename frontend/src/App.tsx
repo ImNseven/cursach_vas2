@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import GitHubCallbackPage from './pages/GitHubCallbackPage';
 import DashboardPage from './pages/DashboardPage';
+import FigmaMockPage from './pages/FigmaMockPage';
 import DocumentsPage from './pages/DocumentsPage';
 import PrecedentsPage from './pages/PrecedentsPage';
 import HistoryPage from './pages/HistoryPage';
@@ -54,6 +55,7 @@ export default function App() {
             }
           />
           <Route path="/auth/github/callback" element={<GitHubCallbackPage />} />
+          <Route path="/figma" element={<FigmaMockPage />} />
           <Route
             path="/dashboard"
             element={

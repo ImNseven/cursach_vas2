@@ -12,11 +12,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Have I Been Pwned API client for password breach check.
- * Uses k-anonymity: only first 5 chars of SHA-1 hash are sent to the API.
- * @see <a href="https://haveibeenpwned.com/API/v3#PwnedPasswords">HIBP API</a>
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,12 +21,6 @@ public class PwnedPasswordService {
 
     private final WebClient.Builder webClientBuilder;
 
-    /**
-     * Checks if the password has been found in known data breaches.
-     *
-     * @param password plain text password
-     * @return true if password was pwned, false otherwise
-     */
     public boolean isPasswordPwned(String password) {
         if (password == null || password.isBlank()) {
             return false;

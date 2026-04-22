@@ -48,7 +48,6 @@ public class SearchService {
         List<DocumentPrecedent> matches = new ArrayList<>();
 
         for (Precedent precedent : allPrecedents) {
-            // Exclude the auto-created precedent originating from the same uploaded document.
             if (precedent.getSourceDocument() != null
                     && Objects.equals(precedent.getSourceDocument().getId(), documentId)) {
                 continue;

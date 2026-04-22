@@ -4,16 +4,18 @@
 
 ## Технологический стек
 
-| Компонент | Технология |
-|-----------|-----------|
-| Backend | Java 21, Spring Boot 3.2, Spring Security, Spring Data JPA |
-| Frontend | React 18, TypeScript, Vite, TailwindCSS |
-| База данных | PostgreSQL 15 |
-| Миграции | Liquibase |
-| Аутентификация | JWT + GitHub OAuth2 |
-| Контейнеризация | Docker + Docker Compose |
-| CI/CD | GitHub Actions |
-| Деплой | Render |
+
+| Компонент       | Технология                                                 |
+| --------------- | ---------------------------------------------------------- |
+| Backend         | Java 21, Spring Boot 3.2, Spring Security, Spring Data JPA |
+| Frontend        | React 18, TypeScript, Vite, TailwindCSS                    |
+| База данных     | PostgreSQL 15                                              |
+| Миграции        | Liquibase                                                  |
+| Аутентификация  | JWT + GitHub OAuth2                                        |
+| Контейнеризация | Docker + Docker Compose                                    |
+| CI/CD           | GitHub Actions                                             |
+| Деплой          | Render                                                     |
+
 
 ## Архитектура
 
@@ -29,6 +31,7 @@ legal-analysis/
 ## Быстрый старт (Docker Compose)
 
 ### Требования
+
 - Docker 24+
 - Docker Compose 2.20+
 
@@ -102,13 +105,16 @@ cd backend
 
 ### 1. Backend (Web Service)
 
-| Параметр | Значение |
-|---------|---------|
-| Build Command | `cd backend && ./mvnw clean package -DskipTests` |
+
+| Параметр      | Значение                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| Build Command | `cd backend && ./mvnw clean package -DskipTests`                                               |
 | Start Command | `java -XX:MaxRAMPercentage=75.0 -jar backend/target/legal-analysis-backend-0.0.1-SNAPSHOT.jar` |
-| Health Check | `/actuator/health` |
+| Health Check  | `/actuator/health`                                                                             |
+
 
 **Переменные окружения:**
+
 ```
 DATABASE_URL=<автоматически из PostgreSQL addon>
 JWT_SECRET=<случайная строка>
@@ -119,12 +125,15 @@ FRONTEND_URL=https://<your-frontend>.onrender.com
 
 ### 2. Frontend (Static Site)
 
-| Параметр | Значение |
-|---------|---------|
-| Build Command | `cd frontend && npm install && npm run build` |
-| Publish Directory | `frontend/dist` |
+
+| Параметр          | Значение                                      |
+| ----------------- | --------------------------------------------- |
+| Build Command     | `cd frontend && npm install && npm run build` |
+| Publish Directory | `frontend/dist`                               |
+
 
 **Переменные окружения:**
+
 ```
 VITE_API_URL=https://<your-backend>.onrender.com
 VITE_GITHUB_CLIENT_ID=<тот же GitHub OAuth Client ID>
@@ -134,26 +143,17 @@ VITE_GITHUB_CLIENT_ID=<тот же GitHub OAuth Client ID>
 
 Создайте PostgreSQL addon на Render — бесплатный план имеет 1GB хранилища.
 
-### 4. Настройка домена (hoster.by)
-
-1. В панели Render откройте ваш Static Site → Settings → Custom Domains
-2. Добавьте ваш домен: `yourdomain.by`
-3. Скопируйте CNAME значение
-4. В панели hoster.by добавьте DNS запись:
-   - Тип: `CNAME`
-   - Имя: `@` или `www`
-   - Значение: `<ваш-сайт>.onrender.com`
-5. Подождите 5-30 минут для распространения DNS
-
 ## Демо-данные
 
 После первого запуска автоматически загружаются:
+
 - **25 прецедентов** по категориям: Гражданское право, Трудовые споры, Семейное право, Договорное право, Жилищное право, Административное право, Потребительские споры
 - **7 категорий** юридических дел
 - **12 тегов** для классификации
 - Тестовый аккаунт администратора
 
 ### Тестовый вход
+
 ```
 Email: admin@legal-analysis.com
 Пароль: password
@@ -177,6 +177,7 @@ Email: admin@legal-analysis.com
 ## API документация
 
 После запуска бэкенда Swagger UI доступен по адресу:
+
 ```
 http://localhost:8080/swagger-ui.html
 ```
@@ -208,17 +209,20 @@ DELETE /api/v1/favorites/{id}       - Удалить из избранного
 
 ## Паттерны проектирования
 
-| Паттерн | Применение |
-|---------|-----------|
-| **Strategy** | `TextAnalysisStrategy` — различные алгоритмы анализа текста |
-| **Factory** | `DocumentParserFactory` — создание парсеров для .txt и .docx |
-| **Builder** | Lombok `@Builder` для сложных DTO и сущностей |
-| **Facade** | `GitHubApiClient` — упрощение работы с GitHub API |
-| **Repository** | Spring Data JPA repositories для всех сущностей |
+
+| Паттерн        | Применение                                                   |
+| -------------- | ------------------------------------------------------------ |
+| **Strategy**   | `TextAnalysisStrategy` — различные алгоритмы анализа текста  |
+| **Factory**    | `DocumentParserFactory` — создание парсеров для .txt и .docx |
+| **Builder**    | Lombok `@Builder` для сложных DTO и сущностей                |
+| **Facade**     | `GitHubApiClient` — упрощение работы с GitHub API            |
+| **Repository** | Spring Data JPA repositories для всех сущностей              |
+
 
 ## Структура базы данных
 
 **12 таблиц:**
+
 - `users` — пользователи системы
 - `roles` — роли (USER, ADMIN)
 - `categories` — категории юридических дел
@@ -232,6 +236,5 @@ DELETE /api/v1/favorites/{id}       - Удалить из избранного
 - `favorites` — избранные прецеденты пользователей
 - `annotations` — заметки к документам
 
-## Лицензия
 
-MIT
+

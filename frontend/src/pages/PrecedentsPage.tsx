@@ -64,7 +64,6 @@ export default function PrecedentsPage() {
         </p>
       </div>
 
-      {/* Search */}
       <div className="card mb-6">
         <form onSubmit={handleSearch} className="flex gap-3">
           <input
@@ -271,7 +270,6 @@ export default function PrecedentsPage() {
         </div>
       )}
 
-      {/* Pagination */}
       {!searchQuery && totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">
           <button

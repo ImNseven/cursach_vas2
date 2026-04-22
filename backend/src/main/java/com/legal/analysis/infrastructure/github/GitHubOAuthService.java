@@ -32,12 +32,6 @@ public class GitHubOAuthService {
         this.webClientBuilder = webClientBuilder;
     }
 
-    /**
-     * Exchanges authorization code for access token.
-     *
-     * @param code authorization code from GitHub callback
-     * @return access token or empty if exchange failed
-     */
     public Optional<String> exchangeCodeForToken(String code) {
         try {
             MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();

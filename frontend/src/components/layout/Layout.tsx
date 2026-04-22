@@ -39,9 +39,7 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-10">
-        {/* Logo */}
         <div className="p-6 border-b border-gray-100">
           <Link to="/dashboard" className="flex items-center gap-3">
             <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -54,7 +52,6 @@ export default function Layout({ children }: LayoutProps) {
           </Link>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map(({ path, label, icon: Icon }) => {
             const isActive = location.pathname === path;
@@ -75,7 +72,6 @@ export default function Layout({ children }: LayoutProps) {
           })}
         </nav>
 
-        {/* User section */}
         <div className="p-4 border-t border-gray-100">
           <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -102,7 +98,6 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="flex-1 ml-64">
         <main className="p-8">{children}</main>
       </div>

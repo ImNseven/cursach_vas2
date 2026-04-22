@@ -68,7 +68,6 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Анализ документа</h1>
         <p className="text-gray-500">
@@ -76,7 +75,6 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Step indicator */}
       <div className="flex items-center gap-2 mb-8">
         {[
           { key: 'upload', label: '1. Загрузка' },
@@ -107,7 +105,6 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Content */}
       {step === 'upload' && (
         <div className="card">
           <FileUpload
@@ -152,7 +149,6 @@ export default function DashboardPage() {
 
       {step === 'results' && results && (
         <div>
-          {/* Summary */}
           <div className="card mb-6">
             <div className="flex items-start justify-between">
               <div>
@@ -200,7 +196,6 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Results list */}
           {results.matches.length > 0 && (
             <div className="space-y-4 mb-6">
               {results.matches.map((match) => (
@@ -212,7 +207,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex gap-3">
             <button onClick={handleReset} className="btn-primary">
               <Scale className="w-4 h-4 mr-2" />
