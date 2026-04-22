@@ -2,6 +2,7 @@ services:
   - type: web
     name: legal-analysis-backend
     runtime: docker
+    dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
     plan: free
     envVars:
