@@ -17,7 +17,7 @@ services:
       - key: GITHUB_CLIENT_SECRET
         sync: false
       - key: FRONTEND_URL
-        value: https://legal-analysis-frontend.onrender.com
+        value: https://legal-analysis-frontend-iejd.onrender.com
     healthCheckPath: /actuator/health
 
   - type: web
@@ -28,7 +28,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        value: https://legal-analysis-backend.onrender.com
+        value: https://legal-analysis-backend-iejd.onrender.com
       - key: VITE_GITHUB_CLIENT_ID
         value: Ov23licGcpCKTS7ukwCR
     routes:
