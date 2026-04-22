@@ -1,11 +1,9 @@
 services:
   - type: web
     name: legal-analysis-backend
-    env: java
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
     plan: free
-    rootDir: backend
-    buildCommand: mvn package -DskipTests -B
-    startCommand: java -Xmx400m -jar target/legal-analysis-backend-0.0.1-SNAPSHOT.jar
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -41,5 +39,4 @@ services:
 databases:
   - name: legal-analysis-db
     databaseName: legal_analysis
-    user: postgres
     plan: free
